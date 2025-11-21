@@ -1,96 +1,140 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { FileCheck, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  ChevronLeft,
+  ChevronRight,
+  Printer,
+  Loader2,
+  Menu,
+  MoreVertical,
+  FileText,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const DocumentViewer = () => {
+const DocumentViewer = ({
+  pdfUrl = "TITULO_73619637_22244F_251120_152231.pdf",
+}) => {
   const { toast } = useToast();
-  
+  const [numPages] = useState(1);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [scale, setScale] = useState(0.8);
+  const [rotation, setRotation] = useState(0);
+
+  const fileName = "TITULO_73619637_22244F_251120_152231.pdf";
+
   const handleDownload = () => {
-    // Simular descarga del documento
     toast({
       title: "Descargando documento",
-      description: "RD-3_documento_firmado.pdf",
+      description: fileName,
     });
-    
-    // En producción, aquí iría la lógica real de descarga
-    // const link = document.createElement('a');
-    // link.href = '/path/to/document.pdf';
-    // link.download = 'RD-3_documento_firmado.pdf';
-    // link.click();
+
+    if (pdfUrl) {
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = fileName;
+      link.click();
+    }
   };
 
+  const handlePrint = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, "_blank");
+    }
+    toast({
+      title: "Preparando impresión",
+      description: "Abriendo documento en nueva ventana",
+    });
+  };
+
+  const zoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.25, 3.0));
+  };
+
+  const zoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.25, 0.5));
+  };
+
+  const rotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
+  const goToPrevPage = () => {
+    setPageNumber((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setPageNumber((prev) => Math.min(prev + 1, numPages));
+  };
+
+  const scalePercentage = Math.round(scale * 100);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-lg font-semibold text-primary">Documento</h3>
-        <Button 
-          onClick={handleDownload}
-          size="sm"
-          className="gap-2"
+    <div className="w-full">
+      <h2 className="text-2xl font-bold text-blue-600 mb-4 px-4">Documento</h2>
+
+      <Card className="p-0 overflow-hidden border-0 shadow-lg">
+        {/* Header con controles estilo PDF viewer */}
+
+        {/* Área del documento con sidebar y viewer */}
+        <div
+          className="flex bg-[#3a3a3a]"
+          style={{
+            height: "calc(100vh - 600px)",
+            minHeight: "200px",
+          }}
         >
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Descargar PDF</span>
-        </Button>
-      </div>
-      
-      <Card className="p-0 overflow-hidden">
-        <div className="bg-[#323232] p-3 sm:p-4">
-          <div className="flex items-center gap-2 text-white text-xs sm:text-sm mb-3 sm:mb-4 flex-wrap">
-            <span className="truncate max-w-[120px] sm:max-w-none">RD-3_documento_firmado.pdf</span>
-            <span className="text-muted-foreground">•</span>
-            <span>1 / 1</span>
-            <span className="text-muted-foreground">•</span>
-            <span>100%</span>
-          </div>
-          
-          <button
-            onClick={handleDownload}
-            className="w-full bg-[#4a4a4a] rounded-lg p-3 sm:p-6 hover:bg-[#525252] transition-colors cursor-pointer group"
-          >
-            <div className="flex items-center justify-center min-h-[300px] sm:min-h-[500px]">
-              <div className="bg-white rounded shadow-lg p-3 sm:p-4 w-full max-w-2xl group-hover:shadow-xl transition-shadow">
-                <div className="aspect-[3/4] bg-gradient-to-br from-blue-50 to-white rounded flex items-center justify-center p-4">
-                  <div className="text-center space-y-3 sm:space-y-4 max-w-sm">
-                    <div className="bg-primary/10 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <FileCheck className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="bg-primary rounded p-1">
-                          <FileCheck className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
-                        </div>
-                        <div className="text-primary font-bold text-sm sm:text-lg">SENATI</div>
+          {/* Sidebar con miniaturas */}
+
+          {/* Main PDF viewer */}
+          <div className="flex-1 overflow-auto p-6 ">
+            <div className=" flex justify-center items-start">
+              {pdfUrl ? (
+                <div
+                  className="shadow-2xl bg-white cursor-pointer"
+                  onClick={handleDownload}
+                  style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: "top center",
+                  }}
+                >
+                  <iframe
+                    src={pdfUrl}
+                    className="border-0 pointer-events-none"
+                    style={{
+                      width: "800px",
+                      height: "1131px",
+                    }}
+                    title="PDF Viewer"
+                  />
+                </div>
+              ) : (
+                <div
+                  className="bg-white shadow-2xl"
+                  style={{ width: "800px", height: "1131px" }}
+                >
+                  <div className="h-full bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-8">
+                    <div className="text-center space-y-6 max-w-lg">
+                      <div className="bg-blue-600/10 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
+                        <FileText className="w-12 h-12 text-blue-600" />
                       </div>
-                      
-                      <div className="text-primary font-bold text-base sm:text-lg">REPÚBLICA DEL PERÚ</div>
-                      <div className="text-xs sm:text-sm font-semibold text-foreground">A NOMBRE DE LA NACIÓN</div>
-                      
-                      <div className="pt-2 sm:pt-4 space-y-1">
-                        <div className="text-xs font-medium text-muted-foreground">
-                          Resolución Directoral N° 3
-                        </div>
-                        <div className="text-[10px] sm:text-xs text-muted-foreground">
-                          Documento firmado digitalmente
-                        </div>
-                        <div className="text-[10px] text-success font-semibold pt-1">
-                          ✓ 2 firmas válidas
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="text-xs text-primary font-medium flex items-center justify-center gap-1">
-                        <Download className="w-3 h-3" />
-                        Click para descargar
+
+                      <div className="pt-6">
+                        <Button onClick={handleDownload} className="gap-2">
+                          <Download className="w-4 h-4" />
+                          Descargar documento
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          </button>
+          </div>
         </div>
       </Card>
     </div>
